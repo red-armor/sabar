@@ -1,4 +1,4 @@
 # sabar
 
-_A middleware combiner has `before`, `next`, `abort` and `resume` actions_
+_A middleware combiner has `back`, `next`, `abort` and `resume` actions_
 
