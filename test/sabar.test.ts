@@ -1,21 +1,7 @@
 import Sabar from '../src';
 
-describe('first', () => {
-  it('one middleware', () => {
-    const job = new Sabar();
-    const mockCallback = jest.fn(() => {});
-
-    job.use(mockCallback);
-    job.start('first');
-
-    expect(mockCallback.mock.calls.length).toBe(1);
-    expect(mockCallback.mock.calls[0].length).toBe(3);
-    const args = mockCallback.mock.calls[0] as any[];
-    expect(args[0]).toEqual('first');
-    expect(args[1]).toEqual({});
-  });
-
-  it('one middleware', () => {
+describe('Test actions', () => {
+  it('next middleware will not be triggered automatically', () => {
     const job = new Sabar();
     const mockCallback1 = jest.fn((str, ctx) => {
       ctx.result = `${str}_mock1`;
@@ -29,6 +15,139 @@ describe('first', () => {
     job.start('first');
 
     expect(mockCallback1.mock.calls.length).toBe(1);
+    expect(mockCallback2.mock.calls.length).toBe(0);
+  });
+
+  it('`next` to trigger next middleware', () => {
+    const job = new Sabar();
+    const mockCallback1 = jest.fn((str, ctx, actions) => {
+      ctx.result = `${str}_mock1`;
+      actions.next();
+    });
+    const mockCallback2 = jest.fn((str, ctx) => {
+      ctx.result = `${str}_mock2`;
+    });
+
+    job.use(mockCallback1);
+    job.use(mockCallback2);
+    job.start('first');
+
+    expect(mockCallback1.mock.calls.length).toBe(1);
     expect(mockCallback2.mock.calls.length).toBe(1);
+  });
+
+  it('`back` to re-run from last middleware', () => {
+    const job = new Sabar();
+    let falsy = false;
+    const mockCallback1 = jest.fn((str, ctx, actions) => {
+      ctx.result = `${str}_mock1`;
+      actions.next();
+    });
+    const mockCallback2 = jest.fn((str, ctx, actions) => {
+      ctx.result = `${str}_mock2`;
+      if (!falsy) {
+        falsy = true; // should be placed before action.back(), or will go into loop
+        actions.back();
+        return;
+      }
+      actions.next();
+    });
+
+    job.use(mockCallback1);
+    job.use(mockCallback2);
+    job.start('first');
+
+    expect(mockCallback1.mock.calls.length).toBe(2);
+    expect(mockCallback2.mock.calls.length).toBe(2);
+  });
+});
+
+describe('Basic functionalities', () => {
+  it('middleware will be called after `start`', () => {
+    const job = new Sabar();
+    const mockCallback = jest.fn(() => {});
+
+    job.use(mockCallback);
+    job.start('first');
+
+    expect(mockCallback.mock.calls.length).toBe(1);
+    expect(mockCallback.mock.calls[0].length).toBe(3);
+    const args = mockCallback.mock.calls[0] as any[];
+    expect(args[0]).toEqual('first');
+    expect(args[1]).toEqual({});
+  });
+
+  it('Basically, the first parameter should be with same value', () => {
+    const job = new Sabar();
+    const mockCallback1 = jest.fn((str, ctx, actions) => {
+      ctx.result = `${str}_mock1`;
+      actions.next();
+    });
+    const mockCallback2 = jest.fn((str, ctx, actions) => {
+      ctx.result = `${str}_mock2`;
+      actions.next();
+    });
+    const mockCallback3 = jest.fn((str, ctx) => {
+      ctx.result = `${str}_mock3`;
+    });
+
+    job.use(mockCallback1);
+    job.use(mockCallback2);
+    job.use(mockCallback3);
+    job.start('first');
+
+    const args1 = mockCallback1.mock.calls[0] as any[];
+    const args2 = mockCallback2.mock.calls[0] as any[];
+    const args3 = mockCallback3.mock.calls[0] as any[];
+    expect(args1[0]).toEqual('first');
+    expect(args2[0]).toEqual('first');
+    expect(args3[0]).toEqual('first');
+  });
+
+  it('ctx is shared by middleware', () => {
+    const job = new Sabar({
+      ctx: { result: {} },
+    });
+    const mockCallback1 = jest.fn((str, ctx, actions) => {
+      ctx.result.first = `${str}_mock1`;
+      actions.next();
+    });
+    const mockCallback2 = jest.fn((str, ctx, actions) => {
+      ctx.result.second = `${str}_mock2`;
+      actions.next();
+    });
+    const mockCallback3 = jest.fn((str, ctx) => {
+      ctx.result.third = `${str}_mock3`;
+    });
+
+    job.use(mockCallback1);
+    job.use(mockCallback2);
+    job.use(mockCallback3);
+    job.start('first');
+
+    const args1 = mockCallback1.mock.calls[0] as any[];
+    const args2 = mockCallback2.mock.calls[0] as any[];
+    const args3 = mockCallback3.mock.calls[0] as any[];
+    expect(args1[1]).toEqual({
+      result: {
+        first: 'first_mock1',
+        second: 'first_mock2',
+        third: 'first_mock3',
+      },
+    });
+    expect(args2[1]).toEqual({
+      result: {
+        first: 'first_mock1',
+        second: 'first_mock2',
+        third: 'first_mock3',
+      },
+    });
+    expect(args3[1]).toEqual({
+      result: {
+        first: 'first_mock1',
+        second: 'first_mock2',
+        third: 'first_mock3',
+      },
+    });
   });
 });

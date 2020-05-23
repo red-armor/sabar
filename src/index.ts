@@ -60,10 +60,10 @@ class Sabar {
   public ancestor: null | Runner;
   public ctx: object;
 
-  constructor() {
+  constructor(options?: { ctx: object }) {
     this.current = null;
     this.ancestor = null;
-    this.ctx = {};
+    this.ctx = options ? options.ctx : {};
   }
 
   use(fn: useFunction) {
