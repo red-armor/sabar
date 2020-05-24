@@ -60,6 +60,50 @@ describe('Test actions', () => {
     expect(mockCallback1.mock.calls.length).toBe(2);
     expect(mockCallback2.mock.calls.length).toBe(2);
   });
+
+  it('`resume` to re-run from ancestor', () => {
+    const job = new Sabar({ ctx: { a: 1 } });
+    let falsy = false;
+
+    const mockCallback1 = jest.fn((...args) => {
+      const length = args.length;
+      const actions = args[length - 1];
+      actions.next();
+    });
+
+    const mockCallback2 = jest.fn((...args) => {
+      const length = args.length;
+      const actions = args[length - 1];
+      actions.next();
+    });
+
+    const mockCallback3 = jest.fn((...args) => {
+      const length = args.length;
+      const actions = args[length - 1];
+      if (falsy) actions.next();
+      else {
+        falsy = true;
+        actions.resume();
+      }
+    });
+
+    const mockCallback4 = jest.fn((...args) => {
+      const length = args.length;
+      const actions = args[length - 1];
+      actions.next();
+    });
+
+    job.use(mockCallback1);
+    job.use(mockCallback2);
+    job.use(mockCallback3);
+    job.use(mockCallback4);
+    job.start();
+
+    expect(mockCallback1.mock.calls.length).toBe(2);
+    expect(mockCallback2.mock.calls.length).toBe(2);
+    expect(mockCallback3.mock.calls.length).toBe(2);
+    expect(mockCallback4.mock.calls.length).toBe(1);
+  });
 });
 
 describe('Basic functionalities', () => {
