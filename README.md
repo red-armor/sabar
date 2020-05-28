@@ -54,13 +54,53 @@ payment.start(user)
 | onSuccess  | Triggered when there is no `nextSibling` of current running middleware | Function | no|
 | onFinish  | Trigger when `onError` or `onSuccess` is invoked | Function | no|
 
-#### use(fn: <...T>(...args: [...T, ctx, actions]) => void)
+#### Provide initial ctx value
+
+```js
+const payment = new Sabar({ ctx: { paymentMethod: 'visa' }})
+```
+
+#### use(...args: <...T>(...args: [...T, ctx, actions])[] => void)
 
 `use` is to register `fn` to `sabar` instance. `fn` is an variadic function with `ctx` and `actions` tailing params.
+
+```js
+const payment = new Sabar({ ctx: { paymentMethod: 'visa' }})
+
+const validateAddress = (args, ctx, actions) => {
+  const { location, name } = args
+  if (!isValidAddress({ location, name })) {
+    return actions.abort()
+  }
+
+  actions.next()
+}
+
+const validateCard = (args, ctx, actions) => {
+  const { cardNumber } = args
+  if (!isValidCard({ cardNumber })) {
+    return actions.abort()
+  }
+
+  actions.next()
+}
+
+const applyPayment = payment.use(
+  validateAddress,
+  validateCard,
+)
+```
 
 #### start(...args: array[])
 
 `start` will make actions begin running. It `args` will be passing between middleware as heading params.
+
+```js
+const job = new Sabar()
+job.use(fn)
+
+job.start()
+```
 
 ### actions
 
