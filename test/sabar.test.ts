@@ -144,6 +144,29 @@ function testUse(useOne: boolean) {
       expect(args[1]).toEqual({});
     });
 
+    it('`start` with no args', () => {
+      const job = new Sabar();
+      const mockCallback1 = jest.fn((ctx, actions) => {
+        ctx.result = `mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(ctx => {
+        ctx.result = `mock2`;
+      });
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+      } else {
+        job.use(mockCallback1, mockCallback2);
+      }
+
+      job.start();
+
+      expect(mockCallback1.mock.calls.length).toBe(1);
+      expect(mockCallback2.mock.calls.length).toBe(1);
+    });
+
     it('Basically, the first parameter should be with same value', () => {
       const job = new Sabar();
       const mockCallback1 = jest.fn((str, ctx, actions) => {
