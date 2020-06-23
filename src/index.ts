@@ -81,10 +81,44 @@ export type actions = {
   resume: () => void;
 };
 
-export type fnType = (<T1>(arg1: T1, ctx: object, actions: actions) => void) |
-(<T1, T2>(arg1: T1, arg2: T2, ctx: object, actions: actions) => void) |
-(<T1, T2, T3>(arg1: T1, arg2: T2, arg3: T3, ctx: object, actions: actions) => void) |
-(<T1, T2, T3, T4>(arg1: T1, arg2: T2, arg3: T3, arg4: T4, ctx: object, actions: actions) => void)
+export type fnType =
+  | (<T1>(arg1: T1, ctx: object, actions: actions) => void)
+  | (<T1, T2>(arg1: T1, arg2: T2, ctx: object, actions: actions) => void)
+  | (<T1, T2, T3>(
+      arg1: T1,
+      arg2: T2,
+      arg3: T3,
+      ctx: object,
+      actions: actions
+    ) => void)
+  | (<T1, T2, T3, T4>(
+      arg1: T1,
+      arg2: T2,
+      arg3: T3,
+      arg4: T4,
+      ctx: object,
+      actions: actions
+    ) => void);
+
+export type overloadFnType = {
+  <T1>(arg1: T1, ctx: object, actions: actions): void;
+  <T1, T2>(arg1: T1, arg2: T2, ctx: object, actions: actions): void;
+  <T1, T2, T3>(
+    arg1: T1,
+    arg2: T2,
+    arg3: T3,
+    ctx: object,
+    actions: actions
+  ): void;
+  <T1, T2, T3, T4>(
+    arg1: T1,
+    arg2: T2,
+    arg3: T3,
+    arg4: T4,
+    ctx: object,
+    actions: actions
+  ): void;
+};
 
 class Sabar {
   public current: null | Runner;
@@ -130,7 +164,7 @@ class Sabar {
     this.current = runner;
   }
 
-  public use(...args: fnType[]): void {
+  public use(...args: overloadFnType[]): void {
     args.forEach(fn => this.useOne(fn));
   }
 
