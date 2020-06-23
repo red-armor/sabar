@@ -30,6 +30,15 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "diagnostics": {
+          "ignoreCodes": [6133]
+        }
+      }
+    }
+  },
   "name": "sabar",
   "author": "youchao liu",
   "module": "dist/sabar.esm.js",

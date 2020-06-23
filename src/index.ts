@@ -34,30 +34,41 @@ class Runner {
   }
 
   run(options: any[]): void {
-    this.fn.apply(
-      this,
-      options.concat({
-        abort: () => {
-          if (isFunction(this.onError)) (this.onError as Function)();
-          if (isFunction(this.onFinish)) (this.onFinish as Function)();
-        },
-        back: () => {
-          if (this.prevSibling) this.prevSibling.run(options);
-        },
-        resume: () => {
-          if (this.prevSibling) this.prevSibling.upstream(options);
-        },
-        next: () => {
-          if (this.nextSibling) {
-            this.nextSibling.run(options);
-            return;
-          }
+    const len = this.fn.length;
+    let args = options.concat({
+      abort: () => {
+        if (isFunction(this.onError)) (this.onError as Function)();
+        if (isFunction(this.onFinish)) (this.onFinish as Function)();
+      },
+      back: () => {
+        if (this.prevSibling) this.prevSibling.run(options);
+      },
+      resume: () => {
+        if (this.prevSibling) this.prevSibling.upstream(options);
+      },
+      next: () => {
+        if (this.nextSibling) {
+          this.nextSibling.run(options);
+          return;
+        }
 
-          if (isFunction(this.onSuccess)) (this.onSuccess as Function)();
-          if (isFunction(this.onFinish)) (this.onFinish as Function)();
-        },
-      })
-    );
+        if (isFunction(this.onSuccess)) (this.onSuccess as Function)();
+        if (isFunction(this.onFinish)) (this.onFinish as Function)();
+      },
+    });
+
+    if (this.nextSibling) {
+      // If `fn` is not the last function:
+      //   1. fn require 2 params, then `callee` will be not passing in.
+      //   2. fn require 1 params, then only `actions` will be passing in
+      if (len === 2) args = args.slice(-2);
+      if (len === 1) args = args.slice(-1);
+    } else {
+      // If `fn` is the last function:
+      //   1. `actions` will not be append to `args`
+      if (len === 2 || len === 1) args = args.slice(0, -1);
+    }
+    this.fn.apply(this, args);
   }
 
   setPrevSibling(runner: Runner) {
@@ -82,6 +93,7 @@ export type actions = {
 };
 
 export type fnType =
+  | ((ctx: object, actions: actions) => void)
   | (<T1>(arg1: T1, ctx: object, actions: actions) => void)
   | (<T1, T2>(arg1: T1, arg2: T2, ctx: object, actions: actions) => void)
   | (<T1, T2, T3>(

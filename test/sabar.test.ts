@@ -249,4 +249,187 @@ function testUse(useOne: boolean) {
       });
     });
   });
+
+  describe(`${prefix} args`, () => {
+    it('fn is not last chain function and with two params', () => {
+      const job = new Sabar({
+        ctx: { result: {} },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn((ctx, actions) => {
+        ctx.result.second = `mock2`;
+        actions.next();
+      });
+      const mockCallback3 = jest.fn((str, ctx) => {
+        ctx.result.third = `${str}_mock3`;
+      });
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+        job.use(mockCallback3);
+      } else {
+        job.use(mockCallback1, mockCallback2, mockCallback3);
+      }
+      job.start('first');
+
+      const args1 = mockCallback1.mock.calls[0] as any[];
+      const args2 = mockCallback2.mock.calls[0] as any[];
+      const args3 = mockCallback3.mock.calls[0] as any[];
+      expect(args1[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+          second: 'mock2',
+          third: 'first_mock3',
+        },
+      });
+      expect(args2[0]).toEqual({
+        result: {
+          first: 'first_mock1',
+          second: 'mock2',
+          third: 'first_mock3',
+        },
+      });
+      const keys = Object.keys(args2[1]);
+
+      expect(keys).toEqual(['abort', 'back', 'resume', 'next']);
+
+      expect(args3[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+          second: 'mock2',
+          third: 'first_mock3',
+        },
+      });
+    });
+
+    it('fn is not last chain function and with one param', () => {
+      const job = new Sabar({
+        ctx: { result: {} },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(actions => {
+        actions.next();
+      });
+      const mockCallback3 = jest.fn((str, ctx) => {
+        ctx.result.third = `${str}_mock3`;
+      });
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+        job.use(mockCallback3);
+      } else {
+        job.use(mockCallback1, mockCallback2, mockCallback3);
+      }
+      job.start('first');
+
+      const args1 = mockCallback1.mock.calls[0] as any[];
+      const args2 = mockCallback2.mock.calls[0] as any[];
+      const args3 = mockCallback3.mock.calls[0] as any[];
+      expect(args1[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+        },
+      });
+      const keys = Object.keys(args2[0]);
+      expect(keys).toEqual(['abort', 'back', 'resume', 'next']);
+
+      expect(args3[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+        },
+      });
+    });
+
+    it('fn is the last chain function and with one param', () => {
+      const job = new Sabar({
+        ctx: { result: {} },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(actions => {
+        actions.next();
+      });
+
+      const mockCallback3 = jest.fn(str => {});
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+        job.use(mockCallback3);
+      } else {
+        job.use(mockCallback1, mockCallback2, mockCallback3);
+      }
+      job.start('first');
+
+      const args1 = mockCallback1.mock.calls[0] as any[];
+      const args2 = mockCallback2.mock.calls[0] as any[];
+      const args3 = mockCallback3.mock.calls[0] as any[];
+      expect(args1[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+        },
+      });
+      const keys = Object.keys(args2[0]);
+      expect(keys).toEqual(['abort', 'back', 'resume', 'next']);
+
+      expect(args3[0]).toEqual('first');
+    });
+
+    it('fn is the last chain function and with two params', () => {
+      const job = new Sabar({
+        ctx: { result: {} },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(actions => {
+        actions.next();
+      });
+      const mockCallback3 = jest.fn((str, ctx) => {
+        ctx.result.third = `${str}_mock3`;
+      });
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+        job.use(mockCallback3);
+      } else {
+        job.use(mockCallback1, mockCallback2, mockCallback3);
+      }
+      job.start('first');
+
+      const args1 = mockCallback1.mock.calls[0] as any[];
+      const args2 = mockCallback2.mock.calls[0] as any[];
+      const args3 = mockCallback3.mock.calls[0] as any[];
+      expect(args1[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+        },
+      });
+      const keys = Object.keys(args2[0]);
+      expect(keys).toEqual(['abort', 'back', 'resume', 'next']);
+      expect(args3[0]).toEqual('first');
+
+      expect(args3[1]).toEqual({
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+        },
+      });
+    });
+  });
 }
