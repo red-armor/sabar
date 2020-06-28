@@ -180,8 +180,9 @@ class Sabar {
     args.forEach(fn => this.useOne(fn));
   }
 
-  public start(...args: any[]) {
+  public start(...args: any[]): object {
     if (this.ancestor) this.ancestor.run(args.concat(this.ctx));
+    return this.ctx;
   }
 }
 

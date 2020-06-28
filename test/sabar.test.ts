@@ -432,4 +432,37 @@ function testUse(useOne: boolean) {
       });
     });
   });
+
+  describe(`${prefix} return value`, () => {
+    it('Basically, `ctx` will be return after start', () => {
+      const job = new Sabar({
+        ctx: { result: {} },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(actions => {
+        actions.next();
+      });
+      const mockCallback3 = jest.fn((str, ctx) => {
+        ctx.result.third = `${str}_mock3`;
+      });
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+        job.use(mockCallback3);
+      } else {
+        job.use(mockCallback1, mockCallback2, mockCallback3);
+      }
+      const result = job.start('first');
+      expect(result).toEqual({
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+        },
+      });
+    });
+  });
 }
