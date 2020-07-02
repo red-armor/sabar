@@ -135,7 +135,7 @@ export type fnType =
 class Sabar {
   public current: null | Runner;
   public ancestor: null | Runner;
-  public ctx: object;
+  public ctx: object | Function;
 
   constructor(options?: { ctx: object }) {
     this.current = null;
@@ -181,8 +181,12 @@ class Sabar {
   }
 
   public start(...args: any[]): object {
-    if (this.ancestor) this.ancestor.run(args.concat(this.ctx));
-    return this.ctx;
+    let contextArg = this.ctx;
+    if (typeof contextArg === 'function')
+      contextArg = (this.ctx as Function).call(null);
+
+    if (this.ancestor) this.ancestor.run(args.concat(contextArg));
+    return contextArg;
   }
 }
 
