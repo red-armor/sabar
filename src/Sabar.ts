@@ -58,15 +58,13 @@ class Runner {
       },
     });
 
+    // If runner is in the middle, the last one should be `actions`,
+    // so args is truncate from end..
     if (this.nextSibling) {
-      // If `fn` is not the last function:
-      //   1. fn require 2 params, then `callee` will be not passing in.
-      //   2. fn require 1 params, then only `actions` will be passing in
-      if (len === 2) args = args.slice(-2);
-      if (len === 1) args = args.slice(-1);
+      args = args.slice(-len);
     } else {
       // if len is 1, arg will be context value.
-      if (len === 1) args = args.slice(-2, -1)[0];
+      if (len === 1) args = args.slice(-2, -1);
     }
     this.fn.apply(this, args);
   }

@@ -145,7 +145,9 @@ function testUse(useOne: boolean) {
     });
 
     it('`start` with no args', () => {
-      const job = new Sabar();
+      const job = new Sabar({
+        ctx: { result: '' },
+      });
       const mockCallback1 = jest.fn((ctx, actions) => {
         ctx.result = `mock1`;
         actions.next();
@@ -350,7 +352,7 @@ function testUse(useOne: boolean) {
       });
     });
 
-    it('fn is the last chain function and with one param', () => {
+    it('fn is the last chain function and with one param, its value should be context', () => {
       const job = new Sabar({
         ctx: { result: {} },
       });
@@ -384,7 +386,7 @@ function testUse(useOne: boolean) {
       const keys = Object.keys(args2[0]);
       expect(keys).toEqual(['abort', 'back', 'resume', 'next']);
 
-      expect(args3[0]).toEqual('first');
+      expect(args3[0]).toEqual({ result: { first: 'first_mock1' } });
     });
 
     it('fn is the last chain function and with two params', () => {
