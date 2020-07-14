@@ -60,7 +60,7 @@ payment.start(user)
 const payment = new Sabar({ ctx: { paymentMethod: 'visa' }})
 ```
 
-#### use(...args: <...T>(...args: [...T, ctx, actions])[] => void)
+#### use(...args: Sabar | <...T>(...args: [...T, ctx, actions])[] => void)
 
 `use` is to register `fn` to `sabar` instance. `fn` is an variadic function with `ctx` and `actions` tailing params.
 
@@ -89,6 +89,19 @@ const applyPayment = payment.use(
   validateAddress,
   validateCard,
 )
+```
+
+`arg` could be a Sabar object. In this condition, Sabar will copy middleware from arg object.
+
+```js
+const job = new Sabar()
+job.use(fn)
+
+const nextJob = new Sabar()
+nextJob.use(job)
+
+job.start()
+nextJob.start()
 ```
 
 #### start(...args: array[])

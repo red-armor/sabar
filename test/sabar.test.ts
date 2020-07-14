@@ -465,4 +465,103 @@ function testUse(useOne: boolean) {
       });
     });
   });
+
+  describe(`${prefix} throw error`, () => {
+    it('try catch exception on sync mode', () => {
+      const job = new Sabar({
+        ctx: {
+          result: {},
+          name: 'job',
+        },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(actions => {
+        throw new Error('error in callback2');
+        // eslint-disable-next-line
+        actions.next();
+      });
+      const mockCallback3 = jest.fn((str, ctx, actions) => {
+        ctx.result.third = `${str}_mock3`;
+        actions.next();
+      });
+
+      expect(() => {
+        if (useOne) {
+          job.use(mockCallback1);
+          job.use(mockCallback2);
+          job.use(mockCallback3);
+        } else {
+          job.use(mockCallback1, mockCallback2, mockCallback3);
+        }
+        job.start('first');
+      }).toThrowError('error in callback2');
+    });
+  });
+
+  describe(`${prefix} use Sabar object`, () => {
+    it('Basically, sabar as use arg', () => {
+      const job = new Sabar({
+        ctx: {
+          result: {},
+          name: 'job',
+        },
+      });
+      const mockCallback1 = jest.fn((str, ctx, actions) => {
+        ctx.result.first = `${str}_mock1`;
+        actions.next();
+      });
+      const mockCallback2 = jest.fn(actions => {
+        actions.next();
+      });
+      const mockCallback3 = jest.fn((str, ctx, actions) => {
+        ctx.result.third = `${str}_mock3`;
+        actions.next();
+      });
+
+      const mockCallback4 = jest.fn((str, ctx) => {
+        ctx.result.forth = `${str}_mock4`;
+      });
+
+      const nextJob = new Sabar({
+        ctx: {
+          result: {},
+          name: 'nextJob',
+        },
+      });
+
+      if (useOne) {
+        job.use(mockCallback1);
+        job.use(mockCallback2);
+        job.use(mockCallback3);
+
+        nextJob.use(job);
+        nextJob.use(mockCallback4);
+      } else {
+        job.use(mockCallback1, mockCallback2, mockCallback3);
+        nextJob.use(job, mockCallback4);
+      }
+      const result = job.start('first');
+      const nextResult = nextJob.start('first');
+
+      expect(result).toEqual({
+        name: 'job',
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+        },
+      });
+
+      expect(nextResult).toEqual({
+        name: 'nextJob',
+        result: {
+          first: 'first_mock1',
+          third: 'first_mock3',
+          forth: 'first_mock4',
+        },
+      });
+    });
+  });
 }

@@ -97,6 +97,20 @@ class Sabar {
     this.ctx = options ? options.ctx : {};
   }
 
+  useFn(fn: Function, ancestor: null | Runner) {
+    const runner = new Runner({ fn, ancestor });
+    if (!this.ancestor) {
+      this.ancestor = runner;
+    }
+
+    if (this.current) {
+      this.current.setNextSibling(runner);
+      runner.setPrevSibling(this.current);
+    }
+
+    this.current = runner;
+  }
+
   // private useOne<T1>(
   //   fn: (arg1: T1, ctx: object, actions: actions) => void
   // ): void;
@@ -116,22 +130,30 @@ class Sabar {
   //     actions: actions
   //   ) => void
   // ): void;
-  private useOne(fn: Fn): void {
-    const runner = new Runner({ fn, ancestor: this.ancestor });
-    if (!this.ancestor) {
-      this.ancestor = runner;
+  /**
+   *
+   * @param fn copy middleware function if fn is a sabar object.
+   */
+  private useOne(fn: Fn | Sabar): void {
+    if (fn instanceof Sabar) {
+      let runner = fn.ancestor;
+      while (runner) {
+        this.useFn(runner.fn, this.ancestor);
+        runner = runner.nextSibling;
+      }
+    } else if (typeof fn === 'function') {
+      this.useFn(fn, this.ancestor);
     }
-
-    if (this.current) {
-      this.current.setNextSibling(runner);
-      runner.setPrevSibling(this.current);
-    }
-
-    this.current = runner;
   }
 
-  public use(...args: Fn[]): void {
+  /**
+   *
+   * @param args could be array of function or Sabar object. When arg is a Sabar object,
+   * its middleware functions will be copied to new Sabar object.
+   */
+  public use(...args: (Fn | Sabar)[]): Sabar {
     args.forEach(fn => this.useOne(fn));
+    return this;
   }
 
   public start(...args: any[]): object {
