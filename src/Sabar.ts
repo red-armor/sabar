@@ -65,9 +65,8 @@ class Runner {
       if (len === 2) args = args.slice(-2);
       if (len === 1) args = args.slice(-1);
     } else {
-      // If `fn` is the last function:
-      //   1. `actions` will not be append to `args`
-      if (len === 2 || len === 1) args = args.slice(0, -1);
+      // if len is 1, arg will be context value.
+      if (len === 1) args = args.slice(-2, -1)[0];
     }
     this.fn.apply(this, args);
   }
